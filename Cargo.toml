@@ -1,0 +1,9 @@
+[package]
+name = "CATAM-0-1-ROOT-FINDING-IN-ONE-DIMENSION"
+version = "0.1.0"
+authors = ["Aberdeen <aberdeen.powell@gmail.com>"]
+
+[dependencies]
+composing = "0.2.0"
+num = "0.4.3"
+plotters = "0.3.7"
