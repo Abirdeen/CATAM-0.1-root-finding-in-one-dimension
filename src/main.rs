@@ -99,6 +99,7 @@ trunc_err: f64,
     /// Parameters
     /// ----------
     /// * `func` : A continuous function with a fixed point, e.g. a contraction mapping.
+/// * `initial_val` : An initial guess for the location of the fixed point.
     /// * `trunc_err` : A float representing the acceptable truncation error for the search; e.g. `trunc_err=1` will result in finding the fixed point +-1.
     /// * `max_iter` : The maximum number of iterations the algorithm will use before it declares there is no fixed point. This is highly dependent on both the rate of convergence and the truncation error.
     ///
