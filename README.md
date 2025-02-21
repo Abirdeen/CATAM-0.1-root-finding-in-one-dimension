@@ -52,3 +52,76 @@ Two choices of $\Gamma$ are implemented as functionals in our program.
 
 Some specific methods, like the Newton-Raphson method, have better convergence. These often depend on properties like differentiability, so are not always an appropriate choice.
 
+## Problems
+
+The original CATAM project involved certain explicit questions and problems, which are reproduced (and solved) here.
+
+---
+
+#### Problem one: 
+
+Show, with the help of a graph, that $F(x)=2x-3sin(x)+5$ has exactly one root.
+
+#### Solution: 
+
+We can see that $2x+8 = 2x+3+5 \ge F(x)\ge 2x-3+5 = 2x+2$, since $1\ge sin(x)\ge -1$. So $F(x)<0$ when $x<-4$, and $F(x)>0$ when $x>-1$. Graphing $F$ in the range $-4\le x\le -1$, we can see there is exactly one root:
+
+<img src="./images/trig-graph-desmos.png" alt="Plot of F" width="400"/>
+
+---
+
+#### Problem two:
+
+Write an implementation of binary search
+
+#### Solution:
+
+Implemented in `root_search::binary`.
+
+---
+
+#### Problem three:
+
+Write an implementation of fixed-point iteration.
+
+#### Solution:
+
+Implemented in `root_search::fixed_point`.
+
+---
+
+#### Problem four:
+
+Use fixed-point iteration to find the root of $F$ by taking the transform $\Gamma(F) = \frac{F}{2+k}$.
+
+1. First, run the program with $k = 0$, a truncation error of $10^{-5}$, $x_0 = -2$, and $N_{max}=10$. Plot $y = f(x)$ and $y = x$ on the same graph, and use these plots to show why convergence should not occur. Explain the divergence by identifying a theoretical criterion that has been violated.
+
+2. Determine the values of $k$ for which convergence is guaranteed if $x_N$ remains in the range $(−\pi, −\pi/2)$.
+
+3. Choose, giving reasons, a value of $k$ for which monotonic convergence should occur near the root, and also a value for which oscillatory convergence should occur near the root. Verify that these two values of $k$ give the expected behaviour, by running the program with $N_{max} = 20$. 
+
+4. Also run the case $k = 16$. This should converge only slowly, so set $N_{max} = 50$. Discuss whether the truncation error is expected to be less than $10^{−5}$ in this case?
+
+5. Discuss whether your results are consistent with first-order convergence.
+
+#### Solution:
+
+For the whole of this question, we use the following code in `main.rs`, varying our parameters as needed and making minor modifications as needed:
+```rust
+fn main() {
+    let initial_func: &ContinuousFunction = &(test_function::trig as fn(f64) -> f64);
+    let k: f64 = 0.0;
+    let initial_val: f64 = -2.0;
+    let trunc_err: f64 = 1.0/pow(10.0, 5);
+    let max_iter: usize = 10;
+
+    let transformed_func: Box<ContinuousFunction> = functional::x_minus(functional::frac(&initial_func, &k));
+    let (mut res, _seq) = root_search::fixed_point(&transformed_func, initial_val, trunc_err, max_iter);
+    res = (res/trunc_err).round()*trunc_err;
+    println!("Root is at {} ± {}", res, trunc_err);
+}
+```
+
+1. Running our code with the given parameters, a root is reported at -3.9749 ± 0.00001. From our previous work, we know this isn't correct. The true root should be between -3 and -2. In fact, a binary search reveals the root is at $x \approx -2.8832$.
+
+---

@@ -9,17 +9,23 @@ type ContinuousFunction<'a> = dyn Fn(f64) -> f64 + 'a;
 
 fn main() {
     let trunc_err: f64 = 0.00000001;
-    let res: f64 = root_search::binary(&test_functions::trig, (-10.0, 15.0), trunc_err);
+    let res:Result<f64, &str>  = root_search::binary(&test_function::trig, (-10.0, 15.0), trunc_err);
 
-    let rounded_res = (res / trunc_err).round() * trunc_err;
+    // let initial_func: &ContinuousFunction = &(test_function::trig as fn(f64) -> f64);
+    // let k: f64 = 0.0;
+    // let initial_val: f64 = -2.0;
+    // let trunc_err: f64 = 1.0/pow(10.0, 5);
+    // let max_iter: usize = 10;
 
-    println!("A zero for your function was found at {rounded_res}+-{trunc_err}");
-
+    // let transformed_func: Box<ContinuousFunction> = functional::x_minus(functional::frac(&initial_func, &k));
+    // let (mut res, _seq) = root_search::fixed_point(&transformed_func, initial_val, trunc_err, max_iter);
+    // res = (res/trunc_err).round()*trunc_err;
+    // println!("Root is at {} ± {}", res, trunc_err);
 }
 
 #[allow(dead_code)]
 mod root_search {
-use ContinuousFunction;
+    use ContinuousFunction;
     use {compose_fn, signum};
 
     /// Find a root of a continuous function using binary search.
@@ -54,10 +60,10 @@ use ContinuousFunction;
     /// }
     /// ```
     pub fn binary(
-func: &ContinuousFunction,
-domain: (f64, f64),
-trunc_err: f64,
-) -> Result<f64, &'static str> {
+        func: &ContinuousFunction,
+        domain: (f64, f64),
+        trunc_err: f64,
+    ) -> Result<f64, &'static str> {
         // Since we only care about signs, we get a tiny speedup by working with the signs of the function
         // values, rather than the values themselves.
         let func_sgn = compose_fn!(func => signum);
@@ -98,7 +104,7 @@ trunc_err: f64,
     /// Parameters
     /// ----------
     /// * `func` : A continuous function with a fixed point, e.g. a contraction mapping.
-/// * `initial_val` : An initial guess for the location of the fixed point.
+    /// * `initial_val` : An initial guess for the location of the fixed point.
     /// * `trunc_err` : A float representing the acceptable truncation error for the search; e.g. `trunc_err=1` will result in finding the fixed point +-1.
     /// * `max_iter` : The maximum number of iterations the algorithm will use before it declares there is no fixed point. This is highly dependent on both the rate of convergence and the truncation error.
     ///
@@ -107,11 +113,11 @@ trunc_err: f64,
     /// * `f64` : A float representing the fixed point.
     /// * `func_vals` : A vector of all computed iterations.
     pub fn fixed_point(
-func: &ContinuousFunction,
+        func: &ContinuousFunction,
         initial_val: f64,
-trunc_err: f64,
-max_iter: usize,
-) -> (f64, Vec<f64>) {
+        trunc_err: f64,
+        max_iter: usize,
+    ) -> (f64, Vec<f64>) {
         let mut func_vals: Vec<f64> = Vec::with_capacity(max_iter);
         let mut current_val: f64 = initial_val;
         for _ in 1..max_iter {
@@ -124,7 +130,7 @@ max_iter: usize,
             current_val = next_val;
         }
         return (current_val, func_vals);
-}
+    }
 }
 
 /// A collection of 'functionals' for use in fixed-point iteration.
@@ -159,7 +165,7 @@ mod functional {
 }
 
 /// A collection of 'test functions' for analysing the root-finders.
-/// 
+///
 /// Functions
 /// ---------
 /// * `identity` : Returns the input. Has a root at `x=0`.
@@ -185,7 +191,7 @@ mod test_function {
 }
 
 /// The derivatives of 'test functions', for use in e.g. the Raphson-Newton algorithm.
-/// 
+///
 /// Functions
 /// ---------
 /// * `identity` : Returns the input. Has a root at `x=0`.
@@ -209,54 +215,3 @@ mod test_func_derivatives {
         return res;
     }
 }
-
-// trait Function {
-//     fn call(&self, x: f64) -> f64;
-//   }
-// trait Derivable: Function {
-//     fn d_dx(&self) -> Box<dyn Function>;
-// }
-
-// macro_rules! def_derivable {
-//     ($func_name:ident, $var:ident, $func:expr, $deriv_name:ident, $dvar:ident, $deriv:expr) => {
-        
-//         struct $func_name;
-//         impl Function for $func_name {
-//         fn call(&self, $var: f64) -> f64  {
-//             $func
-//         }
-//         }
-//         impl Derivable for $func_name {
-//         fn d_dx(&self) -> Box<dyn Function> {
-//             Box::new($deriv_name)
-//         }
-//         }
-
-//         struct $deriv_name;
-//         impl Function for $deriv_name {
-//         fn call(&self, $dvar: f64) -> f64  {
-//             $deriv
-//         }
-//         }
-
-//     };
-// }
-
-// impl Function for Box<dyn Function> {
-//     fn call(&self, x: f64) -> f64 {
-//         self.downcast()
-//     }
-// }
-
-// def_derivable!(Identity, x, x, DIdentity, _x, 1.0);
-
-// fn quotient<F: Derivable>(func: F) -> impl Function {
-//     struct Quotient<F1, F2>(F1, F2);
-//     impl<F1: Function, F2: Function> Function for Quotient<F1, F2> {
-//         fn call(&self, x: f64) -> f64 {
-//           self.0.call(x) / self.1.call(x)
-//         }
-//     }
-//     let derivative = func.d_dx();
-//     Quotient(func, derivative)
-// }
