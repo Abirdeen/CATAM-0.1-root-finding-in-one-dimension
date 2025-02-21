@@ -32,8 +32,23 @@ We implement this algorithm as ```root_search::binary```.
 
 ### Fixed point iteration
 
-[Fixed point iteration](https://en.wikipedia.org/wiki/Fixed-point_iteration) is a general class of methods that involves transforming the equation $F(x)=0$ into the equivalent system $x=f(x)$ for some $f=\Gamma(F)$. A simple example would be $\Gamma(F)(x)=F(x)+x$. After this transformation, we can study the behaviour of the sequence $x_{N+1}=f(x_N)$, where we have selected some starting value $x_0$. If this sequence convergences, we obtain a fixed point $x_*$ of $f$, i.e. a point such that $f(x_*)=x_*$. When $\Gamma$ is suitably chosen, this will give us a root of $F$.
+[Fixed point iteration](https://en.wikipedia.org/wiki/Fixed-point_iteration) is a method for finding fixed points for some function $f$, that is, values for which $f(x)=x$. 
 
-When these methods are convergent, they are at least linearly convergent for simple roots. Some specific methods, like the Newton-Raphson method, have better convergence. These often depend on properties like differentiability, so are not always an appropriate choice.
+The sequence $x_{N+1}=f(x_N)$ may be convergent or divergent for a given starting value $x_0$. If it is convergent, then by [sequential continuity of f](https://en.wikipedia.org/wiki/Continuous_function#Definition_in_terms_of_limits_of_sequences), the limit $x_*$ will be a fixed point of $f$.
+
+When this method is convergent, it is at least linearly convergent for simple roots.
 
 We implement a fixed point iteration algorithm as ```root_search::fixed_point```.
+
+### A nice class of functionals for fixed-point iteration
+
+If $\Gamma$ is any functional such that $\Gamma(F)(x)=0$ exactly when $F(x)=0$, then roots of $F$ correspond to fixed points of $f(x) = x - \Gamma(F)(x)$. We can thus leverage our fixed-point iteration algorithm to find roots of $F$. Picking $\Gamma$ carefully is key to both avoiding divergence, and to having a fast rate of convergence.
+
+Two choices of $\Gamma$ are implemented as functionals in our program.
+
+- $\Gamma(F) = \frac{F}{2+k}$ is implemented as `functional::frac`.
+
+- $\Gamma(F) = \frac{F}{F'}$, where $F'$ is the derivative of $F$, is implemented as `functional::newton_raphson`. $F'$ must be manually defined and passed as an input.
+
+Some specific methods, like the Newton-Raphson method, have better convergence. These often depend on properties like differentiability, so are not always an appropriate choice.
+

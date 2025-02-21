@@ -123,7 +123,38 @@ max_iter: usize,
             }
             current_val = next_val;
         }
-        return (current_val,func_vals);
+        return (current_val, func_vals);
+}
+}
+
+/// A collection of 'functionals' for use in fixed-point iteration.
+///
+/// Functionals
+/// -----------
+/// * `x_minus` : id-F.
+/// * `identity` : F
+/// * `frac` : F/(2+k) unless k=-2, in which case returns the constant function 1; since x -> x-1 has no fixed point, this behaviour is fine.
+#[allow(dead_code)]
+mod functional {
+    use ContinuousFunction;
+
+    pub fn x_minus<'a>(func: Box<ContinuousFunction<'a>>) -> Box<ContinuousFunction<'a>> {
+        Box::new(move |x: f64| -> f64 { x - func(x) })
+    }
+
+    pub fn identity<'a>(func: &'a ContinuousFunction) -> Box<ContinuousFunction<'a>> {
+        Box::new(move |x: f64| -> f64 { func(x) })
+    }
+
+    pub fn frac<'a, 'b: 'a>(
+        func: &'a ContinuousFunction,
+        k: &'b f64,
+    ) -> Box<ContinuousFunction<'a>> {
+        if *k == -2.0 {
+            Box::new(|_x: f64| -> f64 { 1.0 })
+        } else {
+            Box::new(move |x: f64| -> f64 { &func(x) / (2.0 + *k) })
+        }
     }
 }
 
