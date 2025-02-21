@@ -5,6 +5,8 @@ use num::traits::pow;
 extern crate composing;
 use composing::compose_fn;
 
+type ContinuousFunction<'a> = dyn Fn(f64) -> f64 + 'a;
+
 fn main() {
     let trunc_err: f64 = 0.00000001;
     let res: f64 = root_search::binary(&test_functions::trig, (-10.0, 15.0), trunc_err);
@@ -17,6 +19,7 @@ fn main() {
 
 #[allow(dead_code)]
 mod root_search {
+use ContinuousFunction;
     use {compose_fn, signum};
 
     /// Find a root of a continuous function using binary search.
@@ -36,7 +39,8 @@ mod root_search {
     /// This example should output 0.0:
     /// ```rust
     /// fn main() {
-    ///     let res:f64 = root_search::binary(&test_functions::identity, (-1,2), 0.1).round();
+    ///     let mut res:f64 = root_search::binary(&test_function::identity, (-1,2), 0.1)
+    ///     res = res.round();
     ///     println!({}, res);
     /// }
     /// ```
@@ -44,11 +48,16 @@ mod root_search {
     /// This example should output 0.5:
     /// ```rust
     ///fn main() {
-    ///     let res:f64 = root_search::binary(&test_functions::identity, (-1,2), 0.1).round();
+    ///     let mut res:f64 = root_search::binary(&test_function::identity, (-1,2), 0.1)
+    ///     res = (res*10.0).round()/10.0;
     ///     println!({}, res);
     /// }
     /// ```
-    pub fn binary(func: &dyn Fn(f64) -> f64, domain: (f64, f64), trunc_err: f64) -> f64 {
+    pub fn binary(
+func: &ContinuousFunction,
+domain: (f64, f64),
+trunc_err: f64,
+) -> Result<f64, &'static str> {
         // Since we only care about signs, we get a tiny speedup by working with the signs of the function
         // values, rather than the values themselves.
         let func_sgn = compose_fn!(func => signum);
@@ -97,13 +106,18 @@ mod root_search {
     /// -------
     /// * `f64` : A float representing the fixed point.
     /// * `func_vals` : A vector of all computed iterations.
-    pub fn fixed_point(func: &dyn Fn(f64) -> f64, trunc_err: f64, max_iter: usize) -> (f64, Vec<f64>) {
-        let mut func_vals = Vec::with_capacity(max_iter);
-        let mut current_val: f64 = 1.0;
+    pub fn fixed_point(
+func: &ContinuousFunction,
+        initial_val: f64,
+trunc_err: f64,
+max_iter: usize,
+) -> (f64, Vec<f64>) {
+        let mut func_vals: Vec<f64> = Vec::with_capacity(max_iter);
+        let mut current_val: f64 = initial_val;
         for _ in 1..max_iter {
             func_vals.push(current_val);
             let next_val: f64 = func(current_val);
-            if (next_val-current_val).abs() < trunc_err {
+            if (next_val - current_val).abs() < trunc_err {
                 current_val = next_val;
                 break;
             }
@@ -121,7 +135,7 @@ mod root_search {
 /// * `polynom` : A cubic polynomial. Has roots at `x=0.5` and `x=4`.
 /// * `trig` : The sum of a linear polynomial and a sinosoidal function. Has a root at `x=-2.88...`
 #[allow(dead_code)]
-mod test_functions {
+mod test_function {
     use pow;
     /// Test
     pub fn identity(x: f64) -> f64 {
