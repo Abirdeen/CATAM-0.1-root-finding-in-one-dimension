@@ -66,14 +66,13 @@ trunc_err: f64,
         let (mut start_val, end_val): (f64, f64) = (func_sgn(start), func_sgn(end));
 
         if start_val == 0.0 {
-            return start;
+            return Ok(start);
         }
         if end_val == 0.0 {
-            return end;
+            return Ok(end);
         }
         if start_val * end_val > 0.0 {
-            // This should actually return an error, need to figure out error types later.
-            return 1.0;
+            return Err("Error: no sign change at endpoints!");
         }
 
         let val: f64 = loop {
@@ -91,7 +90,7 @@ trunc_err: f64,
             }
         };
 
-        return val;
+        return Ok(val);
     }
 
     /// Return the fixed point of a function where one exists.
