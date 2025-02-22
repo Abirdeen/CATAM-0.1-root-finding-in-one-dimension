@@ -162,6 +162,13 @@ mod functional {
             Box::new(move |x: f64| -> f64 { &func(x) / (2.0 + *k) })
         }
     }
+
+    pub fn newton_raphson<'a, 'b:'a>(
+        func: &'a ContinuousFunction,
+        deriv: &'b ContinuousFunction
+    ) -> Box<ContinuousFunction<'a>> {
+        Box::new(move |x: f64| -> f64 {if deriv(x) == 0.0 {1.0} else {&func(x)/deriv(x)}})
+    }
 }
 
 /// A collection of 'test functions' for analysing the root-finders.
