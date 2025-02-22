@@ -122,4 +122,120 @@ fn main() {
 
 1. Running our code with the given parameters, a root is reported at -3.9749 ± 0.00001. From our previous work, we know this isn't correct. The true root should be between -3 and -2. In fact, a binary search reveals the root is at $x \approx -2.8832$.
 
+For $x_N$ close to $x_*$, we can consider the Taylor expansion of $f$ to see that $x_N = f(x_{N-1}) = f(x_*) + f'(x_*)(x_{N-1} - x_*) + ... = x_* + f'(x_*)(x_{N-1} - x_*) + ...$
+
+Writing $\epsilon_N = x_N-x_*$, we find that 
+
+$\epsilon_N \approx f'(x_*)\epsilon_{N-1}$. 
+
+So if $|f'(x_*)| \cong |\frac{3cos(x_*) + k}{2 + k}| > 1$, then the iteration will diverge. For $k = 0$, $|f'(-2.8832)| \approx 1.4502 > 1$, so divergence is expected.
+
+2. The [mean-value theorem](https://en.wikipedia.org/wiki/Mean_value_theorem) says that, for a function continuous on $[a,b]$ and differentiable on $(a,b)$, there's some $\xi \in (a,b)$ such that $f(b)-f(a) = f'(\xi)(b-a)$. 
+
+In particular, $\epsilon_N = f'(\xi)\epsilon_{N-1}$ for some $\xi \in (x_{N-1}, x_*)$. From this, we can deduce that if $|f'(x)| < 1$ for all $x$ in some interval $[a,b]$, then $f$ is a contraction mapping on $[a,b]$, so the iterations will converge here.
+
+With $[a,b] = [-\pi, -\frac{\pi}{2}]$, and $k > \frac{1}{2}$, we can explicitly compute $|f'(x)| = |\frac{3cos(x) + k}{2 + k}| < \min(|\frac{k - 3}{k + 2}|, |\frac{k}{k+2}|) < 1$.
+
+3. We expect oscillatory convergence when $f'(x) < 0$ near the root, and monotonic convergence when $f'(x) > 0$ near the root. Plotting $f'(x_*) = \frac{3cos(x_*)+k}{2+k}$ as $k$ varies, we find a sign change at the critical value $k_c = 2.9 ± 0.01$. Picking values of $k$ slightly larger or smaller than $k_c$, we should expect rapid monotonic and oscillatory convergence, respectively.
+
+For $k = 2.85$, a truncation error of $10^{-10}$, $x_0 = -2$, and $N_{max}=20$, we find $x_* = -2.8832368726 ± 0.0000000001$ and the following table of iterates:
+
+| $N$ | $x_N$        |
+| --- | ------------ |
+| 0   | -2           |
+| 1   | -2.768637583 |
+| 2   | -2.883242049 |
+| 3   | -2.883236818 |
+| 4   | -2.883236873 |
+| 5   | -2.883236872 |
+
+For $k = 2.95$ and other parameters the same, we find $x_* = -2.8832368726 ± 0.0000000001$ and the following table of iterates:
+
+| $N$ | $x_N$        |
+| --- | ------------ |
+| 0   | -2           |
+| 1   | -2.753109551 |
+| 2   | -2.880409724 |
+| 3   | -2.883207942 |
+| 4   | -2.883236582 |
+| 5   | -2.883236869 |
+| 6   | -2.883236872 |
+
+4. Running the case $k = 16$ with $N_{max} = 50$, a truncation error of $10^{-5}$ and $x_0 = -2$, we get the following table of iterates:
+
+| $N$ | $x_N$     | $N$ | $x_N$     | $N$ | $x_N$     |
+| --- | --------- | --- | --------- | --- | --------- |
+| 1   | -2.207105 | 12  | -2.860369 | 23  | -2.882541 |
+| 2   | -2.373698 | 13  | -2.866583 | 24  | -2.882730 |
+| 3   | -2.503502 | 14  | -2.871111 | 25  | -2.882868 |
+| 4   | -2.602390 | 15  | -2.874409 | 26  | -2.882968 |
+| 5   | -2.676588 | 16  | -2.876810 | 27  | -2.883041 |
+| 6   | -2.731705 | 17  | -2.878559 | 28  | -2.883094 |
+| 7   | -2.772378 | 18  | -2.879832 | 29  | -2.883133 |
+| 8   | -2.802260 | 19  | -2.880758 | 30  | -2.883161 |
+| 9   | -2.824152 | 20  | -2.881433 | 31  | -2.883182 |
+| 10  | -2.840158 | 21  | -2.881924 | 32  | -2.883197 |
+| 11  | -2.851844 | 22  | -2.882281 | 33  | -2.883207 |
+
+5. Since $\epsilon_N \approx f'(x_*)\epsilon_{N-1}$ by our work in part 1, we know that $\lim\limits_{N \to \infty}(|\frac{\epsilon_N}{\epsilon_{N-1}}|) = |f'(x_*)|$, so when $0 < |f'(x_*)| < 1$, we get linear convergence. This is consistent with our results above.
+
+Moreover, when $|f'(x_*)| < \frac{1}{2}$, this method is faster than interval bisection.
+
+---
+
+### Problem five:
+
+Use your program to find the double root of equation $G(x) = x^3 - 8.5x^2 + 20x - 8$ by taking $g = x-\Gamma(G) = x-\frac{G}{20}$. 
+
+By considering $g'(x_*)$ explain why convergence will be slow at a multiple root for any
+choice of functional $\Gamma$ given by post-composition with a differentiable function.
+
+In your calculations some care may be needed over the choice of $x_0$. Since convergence will be slow, take $N_{max} = 1000$. Is this an example of first-order convergence?
+
+#### Solution:
+
+For the whole of this question, we use the following code in `main.rs`, varying our parameters and making minor modifications as needed:
+```rust
+fn main() {
+    let initial_func: &ContinuousFunction = &(test_function::polynom as fn(f64) -> f64);
+    let initial_val: f64 = 4.5;
+    let trunc_err: f64 = 1.0/pow(10.0, 5);
+    let max_iter: usize = 1000;
+
+    let transformed_func: Box<ContinuousFunction> = functional::x_minus(functional::frac(&initial_func, &18.0));
+    let (mut res, _seq) = root_search::fixed_point(&transformed_func, initial_val, trunc_err, max_iter);
+    res = (res/trunc_err).round()*trunc_err;
+    println!("Root is at {} ± {}", res, trunc_err);
+}
+```
+
+We use this code to construct the following table:
+
+| $N$ | $x_N$    | $\epsilon_N$ | $\epsilon_N/\epsilon_{N-1}$     | $7N\epsilon_N/40$ |
+| --- | -------- | ------------ | ------------------------------- | ----------------- |
+| 0   | 4.5      | 0.5          |                                 |                   |
+| 1   | 4.45     | 0.45         | 0.9                             | 0.07875           |
+| 2   | 4.410006 | 0.410006     | 0.820013                        | 0.143502          |
+| 3   | 4.377142 | 0.377142     | 0.754283                        | 0.197999          |
+| 4   | 4.349568 | 0.349568     | 0.699136                        | 0.244698          |
+| 5   | 4.326048 | 0.326048     | 0.652096                        | 0.285292          |
+| ⋮   | ⋮         | ⋮            | ⋮                                | ⋮                 |
+| 731 | 4.007585 | 0.007585     | 0.01517                         | 0.970318          |
+| 732 | 4.007575 | 0.007575     | 0.01515                         | 0.970353          |
+| 733 | 4.007565 | 0.007565     | 0.01513                         | 0.970388          |
+| 734 | 4.007555 | 0.007555     | 0.01511                         | 0.970423          |
+| 735 | 4.007545 | 0.007545     | 0.01509                         | 0.970457          |
+
+We see from our table that $x_N$ converges very slowly to 4, that the ratio $\epsilon_N/\epsilon_{N-1}$ slowly shrinks over (suggesting better than linear convergence), and that the ratio $7N\epsilon_N/40$ slowly tends to $1$.
+
+Now, if $\Gamma(G) = h\circ G$ for some differentiable function $h$, then we can compute $g' = 1 - \frac{dh}{dG} * \frac{dG}{dx}$. When $x_*$ is a repeated root, $G'(x_*) = 0$, so $g'(x_*) = 1$. Since $\epsilon_N \approx g'(x_*)\epsilon_{N-1}$, it follows that the convergence or divergence of the iterations will be small, and depend on higher-order powers of $\epsilon_{N-1}$.
+
+We can examine the Taylor expansion further:
+
+$x_N = x_{N-1} + \frac{1}{2}g''(x_*)\epsilon_{N-1}^2 + O(\epsilon_{N-1}^3)$,
+
+so $\epsilon_N = \epsilon_{N-1} + \frac{1}{2} g''(x_*) \epsilon_{N-1}^2 + O(\epsilon_{N-1}^3)$.
+
+We can compute $g''(x) = -(6x + 17)/20$, so $g''(x_*) = -7/20$. So if $\epsilon_N \sim \frac{\kappa}{N}$ for some constant $\kappa$, then $\kappa = 40/7$, explaining the behaviour of the last column in our previous table.
+
 ---
