@@ -239,3 +239,49 @@ so $\epsilon_N = \epsilon_{N-1} + \frac{1}{2} g''(x_*) \epsilon_{N-1}^2 + O(\eps
 We can compute $g''(x) = -(6x + 17)/20$, so $g''(x_*) = -7/20$. So if $\epsilon_N \sim \frac{\kappa}{N}$ for some constant $\kappa$, then $\kappa = 40/7$, explaining the behaviour of the last column in our previous table.
 
 ---
+
+### Problem six:
+
+Write an implementation of Newton-Raphson. Find a value of $x_0$ for which Newton-Raphson converges, and one that has no converged in 10 iterations. For both $F$ and $G$ do your (converged) results bear out the theoretical orders of convergence?
+
+#### Solution:
+
+Implemented in `functional::newton_raphson`. For the whole of this question, we use the following code in `main.rs`, varying our parameters and making minor modifications as needed:
+```rust
+fn main() -> Result<(), Vec<f64>> {
+    let initial_func: &ContinuousFunction = &(test_function::trig as fn(f64) -> f64);
+    let deriv: &ContinuousFunction = &(test_func_derivatives::trig as fn(f64) -> f64);
+    let initial_val: f64 = -4.0;
+    let precision: usize = 5
+    let trunc_err: f64 = 1.0/pow(10.0, precision);
+    let max_iter: usize = 10;
+
+    let transformed_func: Box<ContinuousFunction> = functional::x_minus(functional::newton_raphson(&initial_func, deriv));
+    let output: Result<(f64, Vec<f64>), Vec<f64>> = root_search::fixed_point(&transformed_func, initial_val, trunc_err, max_iter);
+    match output {
+        Ok(v) => {
+            let (mut res, seq) = v;
+            res = (res/trunc_err).round()*trunc_err;
+            println!("Root is at {:.*} ± {}", precision, res, trunc_err);
+            println!("{}", seq.len());
+        }
+        Err(_e) => {println!("Sequence did not converge in {} iterations", max_iter)}
+    } 
+}
+```
+
+For $x_0 = -4.8$, we don't get convergence within 10 iterations. For $x_0 = -4$, we get convergence within 4 iterations. In fact, by 6 iterations we have an error of less than $10^{-20}$.
+
+For $x_{N-1}$ close to $x_*$,
+
+$x_N = x_{N-1} - \frac{F(x_{N-1})}{F'(x_{N-1})}$
+
+$= x_{N-1} - \frac{F'(x_*)\epsilon_{N-1} + \frac{1}{2}F''(x_*)\epsilon_{N-1}^2 + ...}{F'(x_*) + F''(x_*)\epsilon_{N-1} + \frac{1}{2}F'''(x_*)\epsilon_{N-1}^2 + ...}$
+
+$\approx x_* + \epsilon_{N-1} - \epsilon_{N-1}[1-\frac{F''(x_*)}{2F'(x_*)}\epsilon_{N-1} + O(\epsilon_{N-1}^2)]$
+
+$= x_* + \frac{F''(x_*)}{2F'(x_*)}\epsilon_{N-1}^2 + O(\epsilon_{N-1}^3)$.
+
+So if the iterates converge and $x_*$ is not a double root, then $\epsilon_N \sim C\epsilon_{N-1}^2$ as $N \to \infty$, where $C = \frac{F''(x_*)}{2F'(x_*)}$, i.e. convergence is second-order.
+
+Indeed, computing the ratios $\frac{\epsilon_N}{\epsilon_{N-1}^2}$, we find that this converges to a constant ($\approx -0.0782$) for $F$. For $G$, where there is a double root at $x_* = 4$, we get only linear convergence.
