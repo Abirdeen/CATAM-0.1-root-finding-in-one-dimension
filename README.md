@@ -110,13 +110,13 @@ fn main() -> Result<(), Vec<64>> {
     let initial_func: &ContinuousFunction = &(test_function::trig as fn(f64) -> f64);
     let k: f64 = 0.0;
     let initial_val: f64 = -2.0;
-    let trunc_err: f64 = 1.0/pow(10.0, 5);
+    let precision: usize = 5;
+    let trunc_err: f64 = 1.0/pow(10.0, precision);
     let max_iter: usize = 10;
 
     let transformed_func: Box<ContinuousFunction> = functional::x_minus(functional::frac(&initial_func, &k));
     let (mut res, _seq) = root_search::fixed_point(&transformed_func, initial_val, trunc_err, max_iter)?;
-    res = (res/trunc_err).round()*trunc_err;
-    println!("Root is at {} ± {}", res, trunc_err);
+    println!("Root is at {:.*} ± {}", precision, res, trunc_err);
 }
 ```
 
@@ -199,13 +199,13 @@ For the whole of this question, we use the following code in `main.rs`, varying 
 fn main() -> Result<(), Vec<f64>> {
     let initial_func: &ContinuousFunction = &(test_function::polynom as fn(f64) -> f64);
     let initial_val: f64 = 4.5;
-    let trunc_err: f64 = 1.0/pow(10.0, 5);
+    let precision: usize = 5;
+    let trunc_err: f64 = 1.0/pow(10.0, precision);
     let max_iter: usize = 1000;
 
     let transformed_func: Box<ContinuousFunction> = functional::x_minus(functional::frac(&initial_func, &18.0));
     let (mut res, _seq) = root_search::fixed_point(&transformed_func, initial_val, trunc_err, max_iter)?;
-    res = (res/trunc_err).round()*trunc_err;
-    println!("Root is at {} ± {}", res, trunc_err);
+    println!("Root is at {:.*} ± {}", precision, res, trunc_err);
 }
 ```
 
