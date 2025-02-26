@@ -1,6 +1,6 @@
-# CATAM-0.1-root-finding-in-one-dimension
+# CATAM 0.1 Root Finding in One Dimension
 
-A rewrite of my Cambridge CATAM undergraduate project, "Root finding in one dimension".
+A rewrite of my Cambridge CATAM undergraduate project, "Root Finding in One Dimension".
 
 ## Rust
 
